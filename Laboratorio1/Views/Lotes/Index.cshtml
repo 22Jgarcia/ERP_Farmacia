@@ -1,0 +1,53 @@
+﻿@model IEnumerable<Laboratorio1.Models.Lote>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Lotes</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Producto)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.NumeroLote)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FechaVencimientoLote)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.EstadoLote)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Producto.NombreProducto)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.NumeroLote)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FechaVencimientoLote)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EstadoLote)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.LoteId">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.LoteId">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.LoteId">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
