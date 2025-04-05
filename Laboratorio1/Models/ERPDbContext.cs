@@ -15,6 +15,7 @@ namespace Laboratorio1.Models
         public DbSet<Proveedor> Proveedores { get; set; }
         public DbSet<Producto> Productos { get; set; }
 		public DbSet<Lote> Lotes { get; set; }
+		public DbSet<Movimientos_Inventario> MovimientoInventarios { get; set; }
 
 
 	}
