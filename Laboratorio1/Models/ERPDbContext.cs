@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Laboratorio1.Models;
 
 namespace Laboratorio1.Models
 {
@@ -10,7 +11,9 @@ namespace Laboratorio1.Models
         {
 
         }
+        public DbSet<CategoriaProducto> CategoriaProductos { get; set; }
+        public DbSet<Proveedor> Proveedores { get; set; }
 
-        
+
     }
 }

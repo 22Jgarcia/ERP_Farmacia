@@ -1,0 +1,47 @@
+﻿@model IEnumerable<Laboratorio1.Models.CategoriaProducto>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Categoría de Productos</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.NombreCategoriaProducto)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DescripcionCategoriaProducto)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.EstadoCategoriaProducto)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.NombreCategoriaProducto)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DescripcionCategoriaProducto)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EstadoCategoriaProducto)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.CategoriaProductoId">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.CategoriaProductoId">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.CategoriaProductoId">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
