@@ -1,0 +1,171 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using Laboratorio1.Models;
+using Microsoft.AspNetCore.Authorization;
+
+namespace Laboratorio1.Controllers
+{
+    [Authorize]
+    public class InventariosController : Controller
+    {
+        private readonly ERPDbContext _context;
+
+        public InventariosController(ERPDbContext context)
+        {
+            _context = context;
+        }
+
+        // GET: Inventarios
+        public async Task<IActionResult> Index()
+        {
+            var inventarios = _context.Inventario
+                .Where(i => !i.InventarioEliminado)
+                .Include(i => i.Producto)
+                .Include(i => i.Lote)
+                .ToListAsync();
+
+            return View(await inventarios);
+        }
+
+        // GET: Inventarios/Details/5
+        public async Task<IActionResult> Details(Guid? id)
+        {
+            if (id == null)
+                return NotFound();
+
+            var inventario = await _context.Inventario
+                .Include(m => m.Producto)
+                .Include(m => m.Lote)
+                .FirstOrDefaultAsync(m => m.InventarioId == id);
+
+            return View(inventario);
+        }
+
+        // GET: Inventarios/Create
+        public IActionResult Create()
+        {
+            ViewData["ProductoId"] = new SelectList(_context.Productos.Where(p => !p.ProductoEliminado), "ProductoId", "NombreProducto");
+            ViewData["LoteId"] = new SelectList(_context.Lotes.Where(l => !l.LoteEliminado), "LoteId", "NumeroLote");
+            return View();
+        }
+
+        // POST: Inventarios/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("InventarioId,Cantidad,ProductoId,LoteId")] Inventario inventario)
+        {
+            var producto = await _context.Productos.FindAsync(inventario.ProductoId);
+            var lote = await _context.Lotes.FindAsync(inventario.LoteId);
+
+            if (producto != null && !producto.ProductoEliminado && lote != null && !lote.LoteEliminado)
+            {
+                inventario.InventarioId = Guid.NewGuid();
+                inventario.Producto = producto;
+                inventario.Lote = lote;
+
+                inventario.InventarioEliminado = false; // Importante
+                _context.Add(inventario);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            ViewData["ProductoId"] = new SelectList(_context.Productos.Where(p => !p.ProductoEliminado), "ProductoId", "NombreProducto", inventario.ProductoId);
+            ViewData["LoteId"] = new SelectList(_context.Lotes.Where(l => !l.LoteEliminado), "LoteId", "NumeroLote", inventario.LoteId);
+            return View(inventario);
+        }
+
+        // GET: Inventarios/Edit/5
+        public async Task<IActionResult> Edit(Guid? id)
+        {
+            if (id == null)
+                return NotFound();
+
+            var inventario = await _context.Inventario
+                .FirstOrDefaultAsync(i => i.InventarioId == id && !i.InventarioEliminado);
+
+            if (inventario == null)
+                return NotFound();
+
+            ViewData["ProductoId"] = new SelectList(_context.Productos.Where(p => !p.ProductoEliminado), "ProductoId", "NombreProducto", inventario.ProductoId);
+            ViewData["LoteId"] = new SelectList(_context.Lotes.Where(l => !l.LoteEliminado), "LoteId", "NumeroLote", inventario.LoteId);
+            return View(inventario);
+        }
+
+        // POST: Inventarios/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(Guid id, [Bind("InventarioId,Cantidad,ProductoId,LoteId")] Inventario inventario)
+        {
+            if (id != inventario.InventarioId)
+                return NotFound();
+
+            var producto = await _context.Productos.FindAsync(inventario.ProductoId);
+            var lote = await _context.Lotes.FindAsync(inventario.LoteId);
+
+            if (producto != null && !producto.ProductoEliminado && lote != null && !lote.LoteEliminado)
+            {
+                try
+                {
+                    inventario.Producto = producto;
+                    inventario.Lote = lote;
+                    inventario.InventarioEliminado = false; // Asegurar que siga activo
+                    _context.Update(inventario);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!InventarioExists(inventario.InventarioId))
+                        return NotFound();
+                    else
+                        throw;
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            ViewData["ProductoId"] = new SelectList(_context.Productos.Where(p => !p.ProductoEliminado), "ProductoId", "NombreProducto", inventario.ProductoId);
+            ViewData["LoteId"] = new SelectList(_context.Lotes.Where(l => !l.LoteEliminado), "LoteId", "NumeroLote", inventario.LoteId);
+            return View(inventario);
+        }
+
+        // GET: Inventarios/Delete/5
+        public async Task<IActionResult> Delete(Guid? id)
+        {
+            if (id == null)
+                return NotFound();
+
+            var inventario = await _context.Inventario
+                .Include(m => m.Producto)
+                .Include(m => m.Lote)
+                .FirstOrDefaultAsync(m => m.InventarioId == id && !m.InventarioEliminado);
+
+            if (inventario == null)
+                return NotFound();
+
+            return View(inventario);
+        }
+
+        // POST: Inventarios/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(Guid id)
+        {
+            var inventario = await _context.Inventario.FindAsync(id);
+            if (inventario != null)
+            {
+                inventario.InventarioEliminado = true; // Eliminación lógica
+                _context.Update(inventario);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        private bool InventarioExists(Guid id)
+        {
+            return _context.Inventario.Any(e => e.InventarioId == id && !e.InventarioEliminado);
+        }
+    }
+}
